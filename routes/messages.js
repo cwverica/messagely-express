@@ -5,6 +5,10 @@ const { Message } = require('../models/message');
 const ExpressError = require('../expressError')
 const { ensureCorrectUser, ensureLoggedIn } = require('../middleware/auth')
 
+//TODO: Figure out this bloody mess
+// It probably involves more authentication functions
+
+
 /** GET /:id - get detail of message.
  *
  * => {message: {id,
@@ -35,7 +39,7 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
     } catch (e) {
         return next(e);
     }
-})
+});
 
 
 /** POST/:id/read - mark message as read:
@@ -46,3 +50,13 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  *
  **/
 
+router.post("/:id/read", async function (req, res, next) {
+    try {
+
+        Message.markRead(req.params.id)
+
+    } catch (e) {
+        return next(e);
+    }
+
+});

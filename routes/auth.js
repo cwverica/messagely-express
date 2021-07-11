@@ -1,3 +1,4 @@
+const jwt = require('jsonwebtoken');
 const express = require("express");
 const router = new express.Router();
 const { User } = require('../models/user');
@@ -43,3 +44,5 @@ router.post("/register", async function (req, res, next) {
         throw new ExpressError("Username taken", 400);
     }
 });
+
+module.exports = router;
