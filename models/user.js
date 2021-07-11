@@ -1,6 +1,7 @@
 /** User class for message.ly */
 
-const { BCRYPT_WORK_FACTOR } = require("./config");
+const db = require('../db');
+const { BCRYPT_WORK_FACTOR } = require("../config");
 const b = require('bcrypt');
 const ExpressError = require("../expressError");
 
@@ -29,10 +30,9 @@ class User {
           VALUES ($1, $2, $3, $4, $5, current_timestamp, current_timestamp)
           RETURNING username, password, first_name, last_name, phone`,
         [username, hashedPassword, first_name, last_name, phone]);
-
       return result.rows[0];
     } catch (e) {
-      return next(new ExpressError("Username already taken", 400));
+      return new ExpressError("Username already taken", 400);
     }
   }
 
@@ -52,10 +52,10 @@ class User {
           return true;
         }
       }
-      throw new ExpressError("Username/Password combo invalid", 400)
+      return false;
 
     } catch (e) {
-      return next(e);
+      return e;
     }
   }
 
@@ -74,7 +74,7 @@ class User {
         throw new ExpressError("Invalid username", 400)
       }
     } catch (e) {
-      return next(e);
+      return e;
     }
   }
 
@@ -90,7 +90,7 @@ class User {
       return results.rows;
 
     } catch (e) {
-      return next(e);
+      return e;
     }
   }
 
@@ -117,7 +117,7 @@ class User {
       return user;
 
     } catch (e) {
-      return next(e);
+      return e;
     }
   }
 
@@ -131,6 +131,7 @@ class User {
 
   static async messagesFrom(username) {
     try {
+      await User.get(username);
       const results = await db.query(
         `SELECT m.id,
          m.to_username as username,
@@ -156,12 +157,13 @@ class User {
         to_user.phone = row.phone;
         delete row.username, row.first_name, row.last_name, row.phone;
         row.to_user = { ...to_user }
+
       });
 
       return fromUserMessages;
 
     } catch (e) {
-      return next(e);
+      return e;
     }
   }
 
@@ -175,6 +177,7 @@ class User {
 
   static async messagesTo(username) {
     try {
+      await User.get(username);
       const results = await db.query(
         `SELECT m.id,
          m.from_username as username,
@@ -205,7 +208,7 @@ class User {
       return toUserMessages;
 
     } catch (e) {
-      return next(e);
+      return e;
     }
   }
 }

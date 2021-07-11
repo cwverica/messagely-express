@@ -1,3 +1,10 @@
+const express = require('express');
+const router = new express.Router();
+const { User } = require('../models/user');
+const { Message } = require('../models/message');
+const ExpressError = require('../expressError')
+const { ensureCorrectUser, ensureLoggedIn } = require('../middleware/auth')
+
 /** GET /:id - get detail of message.
  *
  * => {message: {id,
@@ -18,6 +25,17 @@
  *   {message: {id, from_username, to_username, body, sent_at}}
  *
  **/
+
+router.post("/", ensureLoggedIn, async function (req, res, next) {
+    try {
+        const { to_username, body } = req.body;
+        const from_username = req.user.username;
+        const message = await Message.create({ from_username, to_username, body });
+        return { message }
+    } catch (e) {
+        return next(e);
+    }
+})
 
 
 /** POST/:id/read - mark message as read:
